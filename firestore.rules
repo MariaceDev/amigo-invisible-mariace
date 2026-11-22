@@ -1,8 +1,20 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import vuetify from "vite-plugin-vuetify";
+rules_version = '2';
 
-export default defineConfig({
-  plugins: [vue(), vuetify({ autoImport: true })],
-  server: { port: 5173 },
-});
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Cada participante recibe un enlace con el id de SU asignación (un token
+    // aleatorio imposible de adivinar). Puede leer ese documento suelto, pero
+    // NO listar la colección: si pudiera, vería a quién le toca cada uno.
+    match /assignments/{token} {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // Los grupos solo los escribe la función `drawSecretSanta` con el SDK de
+    // administrador, que se salta estas reglas. Desde el navegador, nada.
+    match /groups/{groupId} {
+      allow read, write: if false;
+    }
+  }
+}
