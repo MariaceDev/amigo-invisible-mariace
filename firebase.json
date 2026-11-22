@@ -1,0 +1,10 @@
+node_modules/
+dist/
+lib/
+.env
+.env.*
+!.env.example
+emulator-data/
+*-debug.log
+.firebase/
+.DS_Store
