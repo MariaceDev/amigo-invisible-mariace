@@ -4,7 +4,7 @@ import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { setGlobalOptions } from "firebase-functions/v2";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { drawPairs, validateParticipants } from "./draw.js";
+import { drawPairs, validateParticipants } from "./draw";
 
 initializeApp();
 

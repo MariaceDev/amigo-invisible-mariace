@@ -1,20 +1,68 @@
 rules_version = '2';
 
+// Sin Cloud Functions (plan Spark): todo lo escribe el navegador, así que las
+// reglas acotan qué se puede escribir y cuándo.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Cada participante recibe un enlace con el id de SU asignación (un token
-    // aleatorio imposible de adivinar). Puede leer ese documento suelto, pero
-    // NO listar la colección: si pudiera, vería a quién le toca cada uno.
-    match /assignments/{token} {
-      allow get: if true;
-      allow list, write: if false;
-    }
+    match /groups/{code} {
+      function group() {
+        return get(/databases/$(database)/documents/groups/$(code)).data;
+      }
 
-    // Los grupos solo los escribe la función `drawSecretSanta` con el SDK de
-    // administrador, que se salta estas reglas. Desde el navegador, nada.
-    match /groups/{groupId} {
-      allow read, write: if false;
+      // Quien tiene el código lee el grupo; nadie puede listar los grupos.
+      allow get: if true;
+      allow list, delete: if false;
+
+      allow create: if code.matches('^NAV-[0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['name', 'revealAt', 'pairs', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.revealAt is timestamp
+        && request.resource.data.pairs == null
+        && request.resource.data.createdAt == request.time;
+
+      // El sorteo: una sola vez, solo `pairs` y solo pasada la hora.
+      allow update: if resource.data.pairs == null
+        && request.time >= resource.data.revealAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pairs'])
+        && request.resource.data.pairs is map
+        && request.resource.data.pairs.size() >= 3;
+
+      // Participantes y deseos: los ve todo el grupo.
+      match /members/{key} {
+        allow read: if true;
+        allow delete: if false;
+
+        // Apuntarse: solo antes del sorteo y a la vez que su acceso.
+        allow create: if group().pairs == null
+          && request.resource.data.keys().hasOnly(['name', 'wishes', 'joinedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 40
+          && request.resource.data.wishes == ''
+          && request.resource.data.joinedAt == request.time;
+
+        // Solo se cambia la lista de deseos.
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['wishes'])
+          && request.resource.data.wishes is string
+          && request.resource.data.wishes.size() <= 1000;
+      }
+
+      // Accesos: el id es el hash de código + nombre + PIN. Se puede comprobar
+      // si uno existe (sabiendo los tres), pero no listarlos.
+      match /logins/{id} {
+        allow get: if true;
+        allow list, update, delete: if false;
+
+        // Solo junto con el alta del participante: nadie puede añadir un
+        // segundo PIN a un nombre que ya existe.
+        allow create: if id.matches('^[0-9a-f]{64}$')
+          && request.resource.data.keys().hasOnly(['member'])
+          && !exists(/databases/$(database)/documents/groups/$(code)/members/$(request.resource.data.member))
+          && existsAfter(/databases/$(database)/documents/groups/$(code)/members/$(request.resource.data.member));
+      }
     }
   }
 }

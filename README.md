@@ -1,119 +1,95 @@
-# 🎁 Amigo invisible — laboratorio de Google Cloud
+# 🎁 Amigo invisible
 
-App para organizar un amigo invisible: escribes los participantes, una Cloud
-Function hace el sorteo y cada persona recibe un enlace privado con su
-asignación.
+App web, pensada para el móvil, para el amigo invisible de la familia. Quien
+organiza crea el grupo con el día y la hora de la revelación y comparte un
+código. Cada familiar se apunta con el código, su nombre y un PIN, ve a todos
+los participantes con sus listas de deseos y edita la suya. Llegada la hora,
+el sorteo sale solo y a cada uno le aparece a quién le regala (con su lista
+de deseos), con confeti.
 
-Es pequeña a propósito: sirve para practicar **todo el ciclo de una app en
-Google Cloud** —desarrollo local, despliegue, logs, TTL, costes— sin miedo a
-romper nada del trabajo.
+El diseño es el de Claude Design («Sorteo de Navidad v3»): colores, tipografía
+Bricolage Grotesque, tarjetas con sombra dura y elfos que se asoman.
+
+**Publicada en https://amigo-invisible-mariace.web.app**
 
 ## Stack
 
-| Parte | Tecnología | Carpeta |
-|---|---|---|
-| Web | Vue 3 + TypeScript + Vuetify 3 + Vite | `web/` |
-| Backend | Cloud Functions v2 (Node 22, TypeScript) | `functions/` |
-| Base de datos | Cloud Firestore | reglas en `firestore.rules` |
-| Hosting | Firebase Hosting | sirve `web/dist` |
+| Parte         | Tecnología                                 | Carpeta                    |
+| ------------- | ------------------------------------------ | -------------------------- |
+| Web           | Vue 3 + TypeScript + Vite, CSS propio      | `web/`                     |
+| Base de datos | Cloud Firestore (Madrid, `europe-southwest1`) | reglas en `firestore.rules` |
+| Hosting       | Firebase Hosting                           | sirve `web/dist`           |
+
+Funciona en el **plan Spark (gratis)**: no hay Cloud Functions. La carpeta
+`functions/` es la versión anterior, con el sorteo en una Cloud Function; no
+se despliega (necesitaría el plan Blaze).
 
 ## Cómo funciona
 
 ```
-Organizador ──► web (CreateGroup.vue)
-                  │  httpsCallable("drawSecretSanta")
-                  ▼
-           Cloud Function drawSecretSanta  (europe-southwest1, Madrid)
-                  │  valida, sortea y guarda en un batch
-                  ▼
-           Firestore: groups/{id}  +  assignments/{token}  (uno por persona)
-
-Participante ──► web/?t=<token> (MyAssignment.vue) ──► lee assignments/{token}
+groups/{código}                 { name, revealAt, pairs: {clave: clave} | null, createdAt }
+  members/{clave del nombre}    { name, wishes, joinedAt }
+  logins/{hash}                 { member }
 ```
 
-- El **token** es el id del documento: 128 bits aleatorios. Quien tiene el
-  enlace puede leer SU documento; las reglas impiden listar la colección.
-- El sorteo forma un **círculo** (cada uno regala al siguiente), así que nadie
-  se toca a sí mismo. Lógica pura en `functions/src/draw.ts`, con tests.
+- **Código** `NAV-1234`: es el id del grupo. Con él se lee el grupo; los
+  grupos no se pueden listar.
+- **Nombre único** por grupo, sin mirar mayúsculas: el id del participante es
+  su nombre normalizado (`nameKey`).
+- **PIN**: no se guarda. El acceso es un documento cuyo id es el SHA-256 de
+  código + nombre + PIN; para entrar hay que saber los tres. Las reglas solo
+  dejan crearlo junto con el alta del participante, así que nadie puede
+  añadir un segundo PIN a un nombre ajeno.
+- **Sorteo**: lo hace el primer móvil que abre el grupo pasada la hora, en
+  una transacción. Baraja y forma un círculo (cada uno regala al siguiente),
+  así que nadie se toca a sí mismo (`drawPairs` en `web/src/logic.ts`). Las
+  reglas solo dejan escribirlo **una vez** y **después de `revealAt`** (hora
+  del servidor), y después del sorteo nadie más se puede apuntar.
+
+**Límite conocido** (por no usar servidor): los emparejamientos están en el
+documento del grupo y la app solo enseña el tuyo, pero alguien con
+conocimientos técnicos podría leerlos todos, o probar los 10.000 PIN. Para
+una familia vale; para algo más serio, el sorteo debería ir en una Cloud
+Function (plan Blaze).
 
 ## Requisitos
 
 - Node 22 y pnpm 9 (`npm install -g pnpm@9.15.0`)
-- Java 11 o superior (lo necesita el emulador de Firestore)
+- Java 11 o superior (para el emulador de Firestore)
 
 ## Desarrollo local (no toca la nube, no cuesta nada)
 
 ```bash
 pnpm install
-pnpm emulators     # terminal 1: emuladores de Functions + Firestore (UI en http://127.0.0.1:4000)
+pnpm emulators     # terminal 1: emulador de Firestore (UI en http://127.0.0.1:4000)
 pnpm dev           # terminal 2: la web en http://localhost:5173
 ```
 
-Los emuladores usan el proyecto `demo-amigo-invisible`: el prefijo `demo-`
-le dice a Firebase que es un proyecto falso, solo local. Los datos se guardan
-en `emulator-data/` al cerrar los emuladores.
+El emulador usa el proyecto `demo-amigo-invisible` (el prefijo `demo-` es un
+proyecto falso, solo local). Para probar la revelación sin esperar, crea un
+grupo con la hora ya pasada.
 
 ```bash
-pnpm test          # tests del sorteo
-pnpm typecheck     # TypeScript en web y functions
+pnpm test          # tests de la lógica (sorteo, PIN, fechas…)
+pnpm typecheck
 ```
 
 ## Desplegar
 
-Primera vez:
+Ya está todo creado en `amigo-invisible-mariace` (base de datos en Madrid,
+app web registrada y `web/.env.production`, que no se sube a git). Después de
+cambiar algo:
 
-1. Crea el proyecto en la [consola de Firebase](https://console.firebase.google.com)
-   con el id `amigo-invisible-mariace`.
-2. Actívale el plan **Blaze** (las Cloud Functions lo exigen). Antes de nada,
-   crea un **presupuesto** (ver más abajo).
-3. Crea la base de datos Firestore en `europe-southwest1` (Madrid).
-4. Registra una app web (Configuración del proyecto → Tus apps → `</>`), copia
-   `web/.env.example` como `web/.env.production` y rellena los valores.
-5. Inicia sesión y despliega:
-   ```bash
-   pnpm exec firebase login
-   pnpm deploy:all   # ojo: `pnpm deploy` a secas es un comando de pnpm, no el script
-   ```
+```bash
+pnpm deploy:web     # solo la web
+pnpm deploy:rules   # solo las reglas de Firestore
+pnpm deploy:all     # las dos cosas
+```
 
-Después, despliega solo lo que cambies: `pnpm deploy:functions`,
-`pnpm deploy:web` o `pnpm deploy:rules`.
+Ojo: `pnpm deploy` a secas es un comando de pnpm, no el script. Y no uses
+`firebase deploy` a pelo: usa la CLI global en vez de la del proyecto.
 
-## Ejercicios de Google Cloud
-
-Cada uno practica algo que hablamos para Digibite y para el examen *Associate
-Cloud Engineer*.
-
-1. **Presupuesto y alertas.** Facturación → Presupuestos y alertas → crea uno
-   de 5 € para este proyecto con avisos al 50 %, 90 % y 100 %.
-2. **TTL.** Los sorteos guardan `expireAt` a 60 días. Activa la política:
-   ```bash
-   gcloud firestore fields ttls update expireAt --collection-group=assignments --enable-ttl --project=amigo-invisible-mariace
-   gcloud firestore fields ttls update expireAt --collection-group=groups --enable-ttl --project=amigo-invisible-mariace
-   gcloud firestore fields ttls list --project=amigo-invisible-mariace
-   ```
-3. **Logs.** Haz un sorteo y búscalo en el Explorador de registros:
-   ```
-   resource.type="cloud_run_revision"
-   resource.labels.service_name="drawsecretsanta"
-   jsonPayload.message="sorteo creado"
-   ```
-   Luego intenta un sorteo con dos nombres iguales y busca el aviso
-   `sorteo rechazado` (`severity=WARNING`).
-4. **Error Reporting.** Provoca un error de verdad (por ejemplo, lanza un
-   `throw new Error("prueba")` en la función, despliega y llámala). Míralo
-   agrupado en Error Reporting, márcalo como resuelto y quita el error.
-5. **Alerta en Cloud Monitoring.** Crea una política que te mande un correo si
-   `drawsecretsanta` devuelve errores 5xx.
-6. **IAM.** Mira con qué cuenta de servicio corre la función (Cloud Run →
-   `drawsecretsanta` → Seguridad) y qué permisos tiene.
-7. **Costes.** Tras unos días, mira el informe de facturación agrupado por
-   SKU: lecturas y escrituras de Firestore, CPU de Cloud Run…
-
-## Decisiones que conviene conocer
-
-- `maxInstances: 5` en `setGlobalOptions`: tope de seguridad para que un abuso
-  no escale la función (ni la factura) sin límite.
-- Los logs **nunca** registran quién regala a quién: los logs los ve más gente
-  que los datos.
-- Los errores esperados (datos mal rellenados) se registran como `warn`, no
-  como `error`, para que Error Reporting solo agrupe fallos reales.
+En un proyecto nuevo: crea la base de datos con
+`pnpm exec firebase firestore:databases:create "(default)" --location europe-southwest1`,
+registra una app web (`firebase apps:create WEB`) y copia `web/.env.example`
+como `web/.env.production` con sus valores (`firebase apps:sdkconfig`).

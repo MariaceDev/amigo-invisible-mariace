@@ -1,0 +1,617 @@
+/* Diseño «Sorteo de Navidad v3» (Claude Design). Colores, tipografía y
+   animaciones del prototipo. */
+:root {
+  --hunter: #386641;
+  --sage: #6a994e;
+  --yellow: #a7c957;
+  --cream: #f2e8cf;
+  --brick: #bc4749;
+  --shadow: 5px 5px 0 var(--hunter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  color: var(--hunter);
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+textarea,
+button {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 800;
+}
+
+/* ---------- Estructura ---------- */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 28px 18px 40px;
+}
+
+.column {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pill-year {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--yellow);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+
+.title {
+  margin-top: 6px;
+  font-size: clamp(40px, 10vw, 60px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.intro {
+  font-size: 18px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.loading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sage);
+}
+
+/* ---------- Tarjetas ---------- */
+
+.choice {
+  text-align: left;
+  border: 2px solid var(--hunter);
+  border-radius: 22px;
+  background: #fff;
+  color: var(--hunter);
+  padding: 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.choice:active {
+  transform: translate(4px, 4px);
+  box-shadow: 1px 1px 0 var(--hunter);
+}
+
+.choice-primary {
+  background: var(--brick);
+  color: #fff;
+}
+
+.choice-title {
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 2px solid var(--hunter);
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  font-size: 26px;
+}
+
+.dark {
+  background: var(--hunter);
+  color: var(--cream);
+  border-radius: 24px;
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.pop {
+  animation: pop 0.45s ease-out;
+}
+
+.big-pill {
+  align-self: center;
+  padding: 10px 22px;
+  border-radius: 18px;
+  background: var(--yellow);
+  color: var(--hunter);
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+
+.code-pill {
+  font-size: 44px;
+  letter-spacing: 0.08em;
+}
+
+.target-pill {
+  font-size: clamp(38px, 10vw, 54px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.countdown {
+  font-weight: 800;
+  font-size: clamp(40px, 11vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--yellow);
+}
+
+.day-title {
+  font-weight: 800;
+  font-size: 28px;
+}
+
+.wishlist {
+  background: var(--cream);
+  color: var(--hunter);
+  border-radius: 16px;
+  padding: 14px 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wishlist-label {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brick);
+}
+
+.wishes {
+  font-size: 16px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+/* ---------- Formularios ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.field input {
+  height: 50px;
+  border: 2px solid var(--sage);
+  border-radius: 14px;
+  padding: 0 14px;
+  color: var(--hunter);
+  background: #fff;
+  outline: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.field input:focus,
+.my-wishes textarea:focus {
+  border-color: var(--hunter);
+}
+
+.field input[type="date"],
+.field input[type="time"] {
+  padding: 0 10px;
+}
+
+.input-code {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.input-pin {
+  letter-spacing: 0.4em;
+  font-weight: 800;
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.hint {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--sage);
+  text-wrap: pretty;
+}
+
+.subtle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sage);
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--brick);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.btn {
+  height: 54px;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-outline {
+  padding: 0 18px;
+  border: 2px solid var(--hunter);
+  background: transparent;
+  color: var(--hunter);
+}
+
+.btn-primary {
+  flex: 1;
+  border: 0;
+  background: var(--brick);
+  color: #fff;
+  font-size: 17px;
+}
+
+.btn-light-outline {
+  height: 52px;
+  border: 2px solid var(--cream);
+  background: transparent;
+  color: var(--cream);
+}
+
+.btn-reveal {
+  height: 60px;
+  border: 2px solid var(--cream);
+  border-radius: 16px;
+  background: var(--brick);
+  color: #fff;
+  font-weight: 800;
+  font-size: 19px;
+  box-shadow: 4px 4px 0 var(--yellow);
+}
+
+.btn-ghost {
+  height: 46px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.btn-small {
+  height: 40px;
+  padding: 0 14px;
+  border: 2px solid var(--hunter);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--hunter);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ---------- Mi espacio ---------- */
+
+.me-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.me-names {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.me-group {
+  font-size: 15px;
+  color: var(--sage);
+  font-weight: 600;
+}
+
+.me-hello {
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.warning {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--brick);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.members {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.members-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.members-title h2 {
+  font-size: 24px;
+}
+
+.my-wishes {
+  background: #fff;
+  border: 2px solid var(--hunter);
+  box-shadow: 4px 4px 0 var(--hunter);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.my-wishes textarea {
+  width: 100%;
+  border: 2px solid var(--yellow);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--hunter);
+  resize: vertical;
+  outline: none;
+}
+
+.member-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.tag-me {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--yellow);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.member {
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(106, 153, 78, 0.35);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member strong {
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.member span {
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.member .empty {
+  color: var(--sage);
+  font-style: italic;
+}
+
+.share {
+  background: var(--sage);
+  color: #fff;
+  border-radius: 22px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.share-code {
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+}
+
+.btn-copy {
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--cream);
+  color: var(--hunter);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* ---------- Elfos y confeti ---------- */
+
+.fx {
+  position: fixed;
+  pointer-events: none;
+  z-index: 40;
+  line-height: 1;
+}
+
+.elf-bubble {
+  position: absolute;
+  top: -6px;
+  white-space: nowrap;
+  background: #fff;
+  color: var(--hunter);
+  border: 2px solid var(--hunter);
+  border-radius: 14px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 800;
+  opacity: 0;
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.confetti span {
+  position: absolute;
+  top: 0;
+  transform: translateY(-10vh);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx,
+  .confetti {
+    display: none;
+  }
+}
+
+@keyframes fall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0); }
+  100% { transform: translate3d(var(--dx), 110vh, 0) rotate(var(--r)); }
+}
+@keyframes peekL {
+  0%, 62%, 100% { transform: translateX(-110%) rotate(70deg); }
+  70%, 88% { transform: translateX(-18%) rotate(70deg); }
+  78% { transform: translateX(-14%) rotate(58deg); }
+}
+@keyframes peekR {
+  0%, 55%, 100% { transform: translateX(110%) rotate(-70deg) scaleX(-1); }
+  63%, 85% { transform: translateX(18%) rotate(-70deg) scaleX(-1); }
+  72% { transform: translateX(14%) rotate(-58deg) scaleX(-1); }
+}
+@keyframes bubL {
+  0%, 70%, 88%, 100% { opacity: 0; transform: scale(0.6); }
+  74%, 84% { opacity: 1; transform: scale(1); }
+}
+@keyframes walk {
+  0% { left: -70px; }
+  45% { left: calc(100% + 10px); }
+  45.01%, 100% { left: calc(100% + 70px); }
+}
+@keyframes hop {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-10px) rotate(6deg); }
+}
+@keyframes swing {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes legA {
+  0%, 100% { transform: rotate(22deg); }
+  50% { transform: rotate(-22deg); }
+}
+@keyframes legB {
+  0%, 100% { transform: rotate(-22deg); }
+  50% { transform: rotate(22deg); }
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(-150deg); }
+  50% { transform: rotate(-110deg); }
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes pop {
+  0% { opacity: 0; transform: translateY(16px) scale(0.92) rotate(-2deg); }
+  70% { transform: scale(1.03) rotate(1deg); }
+  100% { opacity: 1; transform: none; }
+}
