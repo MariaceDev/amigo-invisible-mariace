@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Icono de la app: la cabeza de un elfo travieso, con los colores del
+       diseño. A sangre; el dibujo cabe en el círculo central para que Android
+       lo pueda recortar sin cortar nada. -->
+  <rect width="512" height="512" fill="#386641"/>
+  <g transform="translate(0 22)">
+  <g stroke="#1f3d26" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+    <!-- orejas puntiagudas -->
+    <path d="M168 262 L102 214 L176 318 Z" fill="#F4C9A3"/>
+    <path d="M344 262 L410 214 L336 318 Z" fill="#F4C9A3"/>
+    <path d="M160 268 L124 238 L170 300 Z" fill="#E79A8E" stroke="none"/>
+    <path d="M352 268 L388 238 L342 300 Z" fill="#E79A8E" stroke="none"/>
+    <!-- cara -->
+    <circle cx="256" cy="292" r="100" fill="#F4C9A3"/>
+    <!-- gorro: la punta cae hacia la derecha, con pompón -->
+    <path d="M156 222 C 190 150, 250 70, 312 58 C 346 52, 378 78, 392 112 C 368 98, 342 100, 330 120 C 340 160, 352 196, 358 222 Z" fill="#BC4749"/>
+    <circle cx="394" cy="124" r="22" fill="#ffffff"/>
+    <rect x="140" y="204" width="232" height="40" rx="20" fill="#F2E8CF"/>
+  </g>
+  <g fill="none" stroke="#1f3d26" stroke-width="9" stroke-linecap="round">
+    <!-- cejas: una levantada y otra fruncida -->
+    <path d="M196 262 Q 214 244 236 254"/>
+    <path d="M278 262 Q 298 268 318 256"/>
+    <!-- ojo derecho guiñado -->
+    <path d="M280 290 Q 298 302 316 290"/>
+    <!-- sonrisa torcida, más alta a la derecha -->
+    <path d="M214 330 Q 254 362 308 318"/>
+  </g>
+  <!-- ojo izquierdo abierto, con brillo -->
+  <ellipse cx="216" cy="288" rx="11" ry="14" fill="#2b2b2b"/>
+  <circle cx="220" cy="283" r="4" fill="#ffffff"/>
+  <!-- mofletes -->
+  <ellipse cx="190" cy="318" rx="17" ry="11" fill="#E79A8E"/>
+  <ellipse cx="326" cy="314" rx="17" ry="11" fill="#E79A8E"/>
+  </g>
+</svg>

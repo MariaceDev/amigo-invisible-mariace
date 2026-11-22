@@ -124,6 +124,19 @@ h2 {
   color: #fff;
 }
 
+.link-organizer {
+  align-self: center;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--sage);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .choice-title {
   font-weight: 800;
   font-size: 24px;

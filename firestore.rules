@@ -5,17 +5,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // La organizadora: el uid de su cuenta de Google. El mismo que ADMIN_UID
+    // en web/src/admin.ts.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'PENDIENTE';
+    }
+
     match /groups/{code} {
       function group() {
         return get(/databases/$(database)/documents/groups/$(code)).data;
       }
 
-      // Quien tiene el código lee el grupo; nadie puede listar los grupos.
+      // Quien tiene el código lee el grupo; solo la organizadora los lista.
       allow get: if true;
-      allow list, delete: if false;
+      allow list: if isAdmin();
+      allow delete: if false;
 
-      allow create: if code.matches('^NAV-[0-9]{4}$')
-        && request.resource.data.keys().hasOnly(['name', 'revealAt', 'pairs', 'createdAt'])
+      // Solo la organizadora crea grupos.
+      allow create: if isAdmin()
+        && code.matches('^NAV-[0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['name', 'revealAt', 'pairs', 'adminId', 'createdAt'])
+        && request.resource.data.adminId == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 60

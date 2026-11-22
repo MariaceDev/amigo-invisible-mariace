@@ -17,15 +17,24 @@
           <span class="choice-title">Tengo un código</span>
           <span>Me apunto al grupo de la familia, o vuelvo a entrar</span>
         </button>
-        <button class="choice" @click="screen = 'create'">
-          <span class="choice-title">Soy quien organiza</span>
-          <span>Creo el grupo, elijo el día y comparto el código</span>
-        </button>
+        <button class="link-organizer" @click="screen = 'organizer'">Soy la organizadora</button>
       </div>
 
-      <CreateGroup v-else-if="screen === 'create'" @back="screen = 'home'" @created="onCreated" />
+      <OrganizerPanel
+        v-else-if="screen === 'organizer'"
+        @back="screen = 'home'"
+        @create="screen = 'create'"
+        @join="goJoin"
+      />
 
-      <GroupCreated v-else-if="screen === 'created' && created" :group="created" @join="goJoin" />
+      <CreateGroup v-else-if="screen === 'create'" @back="screen = 'organizer'" @created="onCreated" />
+
+      <GroupCreated
+        v-else-if="screen === 'created' && created"
+        :group="created"
+        @join="goJoin"
+        @back="screen = 'organizer'"
+      />
 
       <JoinGroup v-else-if="screen === 'join'" :initial-code="joinCode" @back="screen = 'home'" @joined="onJoined" />
 
@@ -44,9 +53,10 @@ import ElvesDecor from "./components/ElvesDecor.vue";
 import GroupCreated from "./components/GroupCreated.vue";
 import JoinGroup from "./components/JoinGroup.vue";
 import MySpace from "./components/MySpace.vue";
+import OrganizerPanel from "./components/OrganizerPanel.vue";
 import { isValidCode, normalizeCode } from "./logic";
 
-type Screen = "loading" | "home" | "create" | "created" | "join" | "me";
+type Screen = "loading" | "home" | "organizer" | "create" | "created" | "join" | "me";
 
 const SESSION_KEY = "amigo-invisible-sesion";
 

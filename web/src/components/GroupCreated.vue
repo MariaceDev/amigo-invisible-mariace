@@ -9,6 +9,7 @@
     <div class="actions-column">
       <button class="btn btn-light-outline" @click="copy(group.code)">{{ copyLabel }}</button>
       <button class="btn btn-primary" @click="emit('join', group.code)">Apuntarme yo también</button>
+      <button class="btn-ghost" @click="emit('back')">Ver mis grupos</button>
     </div>
   </section>
 </template>
@@ -19,7 +20,7 @@ import { formatReveal } from "../logic";
 import { useCopy } from "../useCopy";
 
 defineProps<{ group: Group }>();
-const emit = defineEmits<{ join: [code: string] }>();
+const emit = defineEmits<{ join: [code: string]; back: [] }>();
 
 const { copy, copyLabel } = useCopy();
 </script>

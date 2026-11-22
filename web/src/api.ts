@@ -1,7 +1,7 @@
 /**
  * Todo lo que toca Firestore. Modelo:
  *
- *   groups/{código}              { name, revealAt, pairs: {clave: clave} | null, createdAt }
+ *   groups/{código}              { name, revealAt, pairs: {clave: clave} | null, adminId, createdAt }
  *     members/{clave del nombre} { name, wishes, joinedAt }
  *     logins/{hash}              { member }   ← hash de código + nombre + PIN
  *
@@ -9,19 +9,22 @@
  * (`drawIfDue`). Las reglas solo dejan escribirlo una vez y después de
  * `revealAt`.
  */
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 import {
   collection,
   doc,
   getDoc,
   onSnapshot,
+  query,
   runTransaction,
   serverTimestamp,
   Timestamp,
   updateDoc,
+  where,
   writeBatch,
   type Unsubscribe,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { auth, db } from "./firebase";
 import { cleanName, drawPairs, loginId, makeCode, MIN_MEMBERS, nameKey } from "./logic";
 
 export type Group = {
@@ -58,8 +61,33 @@ export async function getGroup(code: string): Promise<Group | null> {
   return snap.exists() ? toGroup(code, snap.data()) : null;
 }
 
-/** Crea el grupo con un código libre y lo devuelve. */
+// ---------- La organizadora (cuenta de Google) ----------
+
+export function watchUser(onChange: (user: User | null) => void): Unsubscribe {
+  return onAuthStateChanged(auth, onChange);
+}
+
+export async function signInAsOrganizer(): Promise<void> {
+  await signInWithPopup(auth, new GoogleAuthProvider());
+}
+
+export async function signOutOrganizer(): Promise<void> {
+  await signOut(auth);
+}
+
+/** Los grupos de la organizadora, del más reciente al más antiguo. */
+export function watchMyGroups(uid: string, onChange: (groups: Group[]) => void): Unsubscribe {
+  return onSnapshot(query(collection(db, "groups"), where("adminId", "==", uid)), (snap) => {
+    const groups = snap.docs.map((d) => toGroup(d.id, d.data()));
+    groups.sort((a, b) => b.revealAt.getTime() - a.revealAt.getTime());
+    onChange(groups);
+  });
+}
+
+/** Crea el grupo con un código libre y lo devuelve. Solo la organizadora. */
 export async function createGroup(name: string, revealAt: Date): Promise<Group> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("Entra con tu cuenta de Google para crear grupos.");
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = makeCode();
     const created = await runTransaction(db, async (tx) => {
@@ -69,6 +97,7 @@ export async function createGroup(name: string, revealAt: Date): Promise<Group> 
         name: cleanName(name),
         revealAt: Timestamp.fromDate(revealAt),
         pairs: null,
+        adminId: uid,
         createdAt: serverTimestamp(),
       });
       return true;

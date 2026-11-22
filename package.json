@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "emulators": "firebase emulators:start --only firestore --project demo-amigo-invisible --import ./emulator-data --export-on-exit ./emulator-data",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-amigo-invisible --import ./emulator-data --export-on-exit ./emulator-data",
     "dev": "pnpm --filter web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
